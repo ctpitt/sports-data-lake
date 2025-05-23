@@ -1,0 +1,13 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+
+  build:
+    commands:
+      - echo "Installing dependencies..."
+      - pip install requests
+      - echo "Running sports data lake script..."
+      - python setup_sports_data_lake.py

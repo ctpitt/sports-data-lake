@@ -1,0 +1,24 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Terraform state & backup files
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Sensitive input variable overrides
+terraform.tfvars
+
+# OS metadata files
+.DS_Store
+Thumbs.db
+
+# IDE/editor folders
+.vscode/
+.idea/
+
+# Build logs/output
+build/
+
