@@ -180,27 +180,6 @@ resource "aws_iam_role_policy" "codepipeline_custom_policy" {
 }
 
 
-# Attach CodePipeline role policies
-resource "aws_iam_role_policy_attachment" "codepipeline_codebuild_access" {
-  role       = aws_iam_role.codepipeline_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess"
-}
-
-resource "aws_iam_role_policy_attachment" "codepipeline_full_access" {
-  role       = aws_iam_role.codepipeline_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSCodePipelineServiceRole"
-}
-
-resource "aws_iam_role_policy_attachment" "codepipeline_s3_access" {
-  role       = aws_iam_role.codepipeline_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-}
-
-resource "aws_iam_role_policy_attachment" "codepipeline_codestar_access" {
-  role       = aws_iam_role.codepipeline_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSCodeStarFullAccess"
-}
-
 # CodeStar GitHub connection
 resource "aws_codestarconnections_connection" "github_connection" {
   name          = "sports-data-github-connection"
