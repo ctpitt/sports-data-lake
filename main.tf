@@ -170,6 +170,24 @@ resource "aws_iam_role_policy_attachment" "codepipeline_s3_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
+resource "aws_iam_role_policy" "codepipeline_codestar_use" {
+  name = "codepipeline-use-codestar-connection"
+  role = aws_iam_role.codepipeline_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "codestar-connections:UseConnection"
+        ],
+        Resource = aws_codestarconnections_connection.github_connection.arn
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role_policy_attachment" "codepipeline_codestar_access" {
   role       = aws_iam_role.codepipeline_role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSCodeStarFullAccess"
