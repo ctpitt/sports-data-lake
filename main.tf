@@ -2,6 +2,7 @@ provider "aws" {
   region = var.region
 }
 
+# S3 bucket
 resource "aws_s3_bucket" "sports_data_bucket" {
   bucket = var.bucket_name
 }
@@ -14,25 +15,28 @@ resource "aws_s3_bucket_versioning" "sports_data_versioning" {
   }
 }
 
+# Glue database (new)
+resource "aws_glue_catalog_database" "sports_data_db" {
+  name = var.glue_db_name
+}
+
 # IAM role for CodeBuild
 resource "aws_iam_role" "codebuild_role" {
   name = "codebuild-sports-data-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          Service = "codebuild.amazonaws.com"
-        },
-        Action = "sts:AssumeRole"
-      }
-    ]
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "codebuild.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
   })
 }
 
-# Custom inline policy for the IAM role
+# Updated IAM policy for CodeBuild role
 resource "aws_iam_role_policy" "codebuild_custom_policy" {
   name = "codebuild-sports-data-policy"
   role = aws_iam_role.codebuild_role.id
@@ -47,11 +51,12 @@ resource "aws_iam_role_policy" "codebuild_custom_policy" {
           "s3:PutObject",
           "s3:GetObject",
           "s3:DeleteObject",
-          "s3:ListBucket"
+          "s3:ListBucket",
+          "s3:GetBucketLocation"
         ],
         Resource = [
-          "arn:aws:s3:::sports-bucket",
-          "arn:aws:s3:::sports-bucket/*"
+          "arn:aws:s3:::${var.bucket_name}",
+          "arn:aws:s3:::${var.bucket_name}/*"
         ]
       },
       {
@@ -69,8 +74,8 @@ resource "aws_iam_role_policy" "codebuild_custom_policy" {
         ],
         Resource = [
           "arn:aws:glue:*:*:catalog",
-          "arn:aws:glue:*:*:database/glue_sports_data_lake",
-          "arn:aws:glue:*:*:table/glue_sports_data_lake/*"
+          "arn:aws:glue:*:*:database/${var.glue_db_name}",
+          "arn:aws:glue:*:*:table/${var.glue_db_name}/*"
         ]
       },
       {
@@ -81,41 +86,6 @@ resource "aws_iam_role_policy" "codebuild_custom_policy" {
           "athena:GetQueryResults"
         ],
         Resource = "*"
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "s3:PutObject"
-        ],
-        Resource = [
-          "arn:aws:s3:::sports-bucket/athena-results/*"
-        ]
-      }
-    ]
-  })
-}
-
-# ✅ NEW: Attach CloudWatch Logs permissions for CodeBuild
-resource "aws_iam_role_policy_attachment" "codebuild_logs_access" {
-  role       = aws_iam_role.codebuild_role.name
-  policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
-}
-# S3 permissions to read GetObject in S3
-resource "aws_iam_role_policy" "codebuild_s3_access" {
-  name = "codebuild-s3-access"
-  role = aws_iam_role.codebuild_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "s3:GetObject"
-        ],
-        Resource = [
-          "arn:aws:s3:::${aws_s3_bucket.sports_data_bucket.bucket}/*"
-        ]
       }
     ]
   })
@@ -165,6 +135,7 @@ resource "aws_codebuild_project" "sports_data_build" {
   source_version = "main"
 }
 
+# IAM role for CodePipeline
 resource "aws_iam_role" "codepipeline_role" {
   name = "codepipeline-service-role"
 
@@ -188,29 +159,6 @@ resource "aws_iam_role_policy_attachment" "codepipeline_codebuild_access" {
 resource "aws_iam_role_policy_attachment" "codepipeline_s3_access" {
   role       = aws_iam_role.codepipeline_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-}
-
-resource "aws_iam_role_policy" "codepipeline_codestar_use" {
-  name = "codepipeline-use-codestar-connection"
-  role = aws_iam_role.codepipeline_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "codestar-connections:UseConnection"
-        ],
-        Resource = aws_codestarconnections_connection.github_connection.arn
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "codepipeline_codestar_access" {
-  role       = aws_iam_role.codepipeline_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSCodeStarFullAccess"
 }
 
 resource "aws_codestarconnections_connection" "github_connection" {
