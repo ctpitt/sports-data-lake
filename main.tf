@@ -15,7 +15,7 @@ resource "aws_s3_bucket_versioning" "sports_data_versioning" {
   }
 }
 
-# Glue database (new)
+# Glue database
 resource "aws_glue_catalog_database" "sports_data_db" {
   name = var.glue_db_name
 }
@@ -36,7 +36,7 @@ resource "aws_iam_role" "codebuild_role" {
   })
 }
 
-# Updated IAM policy for CodeBuild role
+# IAM policy for CodeBuild role
 resource "aws_iam_role_policy" "codebuild_custom_policy" {
   name = "codebuild-sports-data-policy"
   role = aws_iam_role.codebuild_role.id
@@ -151,6 +151,7 @@ resource "aws_iam_role" "codepipeline_role" {
   })
 }
 
+# Attach CodePipeline role policies
 resource "aws_iam_role_policy_attachment" "codepipeline_codebuild_access" {
   role       = aws_iam_role.codepipeline_role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess"
@@ -161,11 +162,18 @@ resource "aws_iam_role_policy_attachment" "codepipeline_s3_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
+resource "aws_iam_role_policy_attachment" "codepipeline_codestar_access" {
+  role       = aws_iam_role.codepipeline_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeStarFullAccess"
+}
+
+# CodeStar GitHub connection
 resource "aws_codestarconnections_connection" "github_connection" {
   name          = "sports-data-github-connection"
   provider_type = "GitHub"
 }
 
+# CodePipeline
 resource "aws_codepipeline" "sports_data_pipeline" {
   name     = "sports-data-pipeline"
   role_arn = aws_iam_role.codepipeline_role.arn
