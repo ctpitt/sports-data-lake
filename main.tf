@@ -1,10 +1,17 @@
 provider "aws" {
-  region = "us-east-1"
+  region = var.region
 }
 
-# S3 bucket for storing data
 resource "aws_s3_bucket" "sports_data_bucket" {
-  bucket = "sports-bucket"  # Must be globally unique
+  bucket = var.bucket_name
+}
+
+resource "aws_s3_bucket_versioning" "sports_data_versioning" {
+  bucket = aws_s3_bucket.sports_data_bucket.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
 }
 
 # IAM role for CodeBuild
