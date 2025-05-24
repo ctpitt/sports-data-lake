@@ -100,6 +100,26 @@ resource "aws_iam_role_policy_attachment" "codebuild_logs_access" {
   role       = aws_iam_role.codebuild_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
 }
+# S3 permissions to read GetObject in S3
+resource "aws_iam_role_policy" "codebuild_s3_access" {
+  name = "codebuild-s3-access"
+  role = aws_iam_role.codebuild_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject"
+        ],
+        Resource = [
+          "arn:aws:s3:::${aws_s3_bucket.sports_data_bucket.bucket}/*"
+        ]
+      }
+    ]
+  })
+}
 
 # CodeBuild project
 resource "aws_codebuild_project" "sports_data_build" {
