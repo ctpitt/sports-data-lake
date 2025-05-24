@@ -95,6 +95,12 @@ resource "aws_iam_role_policy" "codebuild_custom_policy" {
   })
 }
 
+# ✅ NEW: Attach CloudWatch Logs permissions for CodeBuild
+resource "aws_iam_role_policy_attachment" "codebuild_logs_access" {
+  role       = aws_iam_role.codebuild_role.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+}
+
 # CodeBuild project
 resource "aws_codebuild_project" "sports_data_build" {
   name         = "sports-data-build"
@@ -138,6 +144,7 @@ resource "aws_codebuild_project" "sports_data_build" {
 
   source_version = "main"
 }
+
 resource "aws_iam_role" "codepipeline_role" {
   name = "codepipeline-service-role"
 
@@ -178,25 +185,24 @@ resource "aws_codepipeline" "sports_data_pipeline" {
   }
 
   stage {
-  name = "Source"
+    name = "Source"
 
-  action {
-    name             = "SourceAction"
-    category         = "Source"
-    owner            = "AWS"
-    provider         = "CodeStarSourceConnection"
-    version          = "1"
-    output_artifacts = ["source_output"]
+    action {
+      name             = "SourceAction"
+      category         = "Source"
+      owner            = "AWS"
+      provider         = "CodeStarSourceConnection"
+      version          = "1"
+      output_artifacts = ["source_output"]
 
-    configuration = {
-      ConnectionArn = aws_codestarconnections_connection.github_connection.arn
-      FullRepositoryId = "ctpitt/sports-data-lake"
-      BranchName       = "main"
-      DetectChanges    = "true"
+      configuration = {
+        ConnectionArn    = aws_codestarconnections_connection.github_connection.arn
+        FullRepositoryId = "ctpitt/sports-data-lake"
+        BranchName       = "main"
+        DetectChanges    = "true"
+      }
     }
   }
-}
-
 
   stage {
     name = "Build"
