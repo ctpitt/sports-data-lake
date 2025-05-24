@@ -86,6 +86,15 @@ resource "aws_iam_role_policy" "codebuild_custom_policy" {
           "athena:GetQueryResults"
         ],
         Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = "*"
       }
     ]
   })
