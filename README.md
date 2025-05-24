@@ -3,6 +3,8 @@
 
 This repository contains the `setup_sports_data_lake.py` script and Terraform files that automate the creation of a sports analytics data lake using AWS services. It integrates with the SportsDataIO API and provisions infrastructure via Terraform, storing data in Amazon S3, cataloging it with AWS Glue, and querying it using Amazon Athena.
 
+ ![image](https://github.com/user-attachments/assets/0a2490a5-1856-40b0-b0ac-55a667ee232c)
+
 # Overview
 
 This solution uses Terraform to automate the deployment of a CI/CD pipeline that performs the following:
@@ -106,4 +108,4 @@ WHERE Position = 'PG';
 1. Extend support for other sports like NFL and MLB
 2. Add a transformation layer with AWS Glue ETL
 3. Schedule recurring data updates with EventBridge or Step Functions
-4. Visualize insights using Amazon QuickSight or Power BI
+4. Visualize insights using Amazon QuickSight
