@@ -163,6 +163,11 @@ resource "aws_iam_role_policy_attachment" "codepipeline_s3_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
+resource "aws_codestarconnections_connection" "github_connection" {
+  name          = "sports-data-github-connection"
+  provider_type = "GitHub"
+}
+
 resource "aws_codepipeline" "sports_data_pipeline" {
   name     = "sports-data-pipeline"
   role_arn = aws_iam_role.codepipeline_role.arn
@@ -173,24 +178,25 @@ resource "aws_codepipeline" "sports_data_pipeline" {
   }
 
   stage {
-    name = "Source"
+  name = "Source"
 
-    action {
-      name             = "SourceAction"
-      category         = "Source"
-      owner            = "ThirdParty"
-      provider         = "GitHub"
-      version          = "1"
-      output_artifacts = ["source_output"]
+  action {
+    name             = "SourceAction"
+    category         = "Source"
+    owner            = "AWS"
+    provider         = "CodeStarSourceConnection"
+    version          = "1"
+    output_artifacts = ["source_output"]
 
-      configuration = {
-        Owner      = "ctpitt"
-        Repo       = "sports-data-lake"
-        Branch     = "main"
-        OAuthToken = var.github_oauth_token
-      }
+    configuration = {
+      ConnectionArn = aws_codestarconnections_connection.github_connection.arn
+      FullRepositoryId = "ctpitt/sports-data-lake"
+      BranchName       = "main"
+      DetectChanges    = "true"
     }
   }
+}
+
 
   stage {
     name = "Build"
