@@ -151,6 +151,35 @@ resource "aws_iam_role" "codepipeline_role" {
   })
 }
 
+resource "aws_iam_role_policy" "codepipeline_custom_policy" {
+  name = "codepipeline-custom-inline-policy"
+  role = aws_iam_role.codepipeline_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "codestar-connections:UseConnection"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "codepipeline:*",
+          "codebuild:*",
+          "s3:*",
+          "iam:PassRole"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+
 # Attach CodePipeline role policies
 resource "aws_iam_role_policy_attachment" "codepipeline_codebuild_access" {
   role       = aws_iam_role.codepipeline_role.name
