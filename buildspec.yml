@@ -8,7 +8,6 @@ phases:
       - pip install -r requirements.txt
   build:
     commands:
-      - echo "Installing dependencies..."
-      - pip install requests
       - echo "Running sports data lake script..."
       - python setup_sports_data_lake.py
+
